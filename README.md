@@ -388,56 +388,58 @@ erDiagram
 
 ---
 
-## 6. Estrutura de Diretórios e Pacotes do Código-Fonte
+6. Estrutura de Diretórios e Pacotes do Código-Fonte
 
-```
 /
-├── java-backend/
-│   ├── pom.xml                                  # Configuração de build Maven e dependências
-│   ├── schema.sql                               # Script DDL oficial para MySQL 8
-│   ├── lib/                                     # Dependências JAR autocontidas (JDBC e JUnit)
-│   │   ├── sqlite-jdbc-3.45.1.0.jar
-│   │   ├── mysql-connector-j-8.3.0.jar
-│   │   ├── junit-jupiter-api-5.10.2.jar
-│   │   ├── junit-jupiter-engine-5.10.2.jar
-│   │   └── junit-platform-console-standalone-1.10.2.jar
-│   └── src/
-│       ├── main/java/br/com/vagacerta/
-│       │   ├── Main.java                        # Classe executável principal
-│       │   ├── model/
-│       │   │   ├── enums/
-│       │   │   │   ├── PerfilAcesso.java
-│       │   │   │   ├── StatusHorario.java
-│       │   │   │   ├── StatusAgendamento.java
-│       │   │   │   └── TipoAgendamento.java
-│       │   │   ├── usuario/
-│       │   │   │   ├── Usuario.java             # Classe base abstrata
-│       │   │   │   ├── Paciente.java            # Herança e validação de RN03
-│       │   │   │   ├── ProfissionalSaude.java   # Herança e método gerarAgenda
-│       │   │   │   └── GestorUnidade.java       # Herança de controle gestor
-│       │   │   ├── unidade/
-│       │   │   │   └── UnidadeSaude.java
-│       │   │   ├── agenda/
-│       │   │   │   ├── Horario.java
-│       │   │   │   └── AgendaDiaria.java        # Composição estrita e RN04
-│       │   │   └── agendamento/
-│       │   │       ├── Agendamento.java         # Base abstrata polimórfica
-│       │   │       ├── ConsultaClinica.java     # Polimorfismo: 24h / 20 min
-│       │   │       ├── Exame.java               # Polimorfismo: 48h / 30 min / preparo
-│       │   │       └── Vacinacao.java           # Polimorfismo: 0h / 5 min / isenta
-│       │   ├── dao/
-│       │   │   ├── ConnectionFactory.java       # Conexões JDBC puras e rotina DDL
-│       │   │   ├── UsuarioDAO.java              # CRUD relacional da hierarquia Usuario
-│       │   │   ├── UnidadeSaudeDAO.java         # CRUD de Unidades Básicas de Saúde
-│       │   │   ├── AgendaDiariaDAO.java         # CRUD com persistência atômica da composição
-│       │   │   └── AgendamentoDAO.java          # CRUD com restrição UNIQUE e lock RN01
-│       │   └── service/
-│       │       ├── AgendamentoService.java      # RN01, RN02 (autoliberação), RN03 e RN04
-│       │       ├── AbsenteismoService.java      # Registro de faltas e acolhimento presencial
-│       │       └── RelatoriosService.java       # Indicadores e Business Intelligence (F6)
-│       └── test/java/br/com/vagacerta/test/
-│           └── VagaCertaTest.java               # Suíte de testes unitários em JUnit 5
-```
+├── metadata.json                                # Metadados do projeto
+├── README.md                                    # Documentação oficial detalhada
+├── src/
+│   └── App.tsx                                  # Interface frontend React + TypeScript
+└── java-backend/
+    ├── pom.xml                                  # Configuração de build Maven e dependências
+    ├── schema.sql                               # Script DDL oficial para MySQL 8
+    ├── lib/                                     # Dependências JAR autocontidas (JDBC e JUnit)
+    │   ├── sqlite-jdbc-3.45.1.0.jar
+    │   ├── mysql-connector-j-8.3.0.jar
+    │   ├── junit-jupiter-api-5.10.2.jar
+    │   ├── junit-jupiter-engine-5.10.2.jar
+    │   └── junit-platform-console-standalone-1.10.2.jar
+    └── src/
+        ├── main/java/br/com/vagacerta/
+        │   ├── Main.java                        # Classe executável principal
+        │   ├── model/
+        │   │   ├── enums/
+        │   │   │   ├── PerfilAcesso.java
+        │   │   │   ├── StatusHorario.java
+        │   │   │   ├── StatusAgendamento.java
+        │   │   │   └── TipoAgendamento.java
+        │   │   ├── usuario/
+        │   │   │   ├── Usuario.java             # Classe base abstrata
+        │   │   │   ├── Paciente.java            # Herança e validação de RN03
+        │   │   │   ├── ProfissionalSaude.java   # Herança e método gerarAgenda
+        │   │   │   └── GestorUnidade.java       # Herança de controle gestor
+        │   │   ├── unidade/
+        │   │   │   └── UnidadeSaude.java
+        │   │   ├── agenda/
+        │   │   │   ├── Horario.java
+        │   │   │   └── AgendaDiaria.java        # Composição estrita e RN04
+        │   │   └── agendamento/
+        │   │       ├── Agendamento.java         # Base abstrata polimórfica
+        │   │       ├── ConsultaClinica.java     # Polimorfismo: 24h / 20 min
+        │   │       ├── Exame.java               # Polimorfismo: 48h / 30 min / preparo
+        │   │       └── Vacinacao.java           # Polimorfismo: 0h / 5 min / isenta
+        │   ├── dao/
+        │   │   ├── ConnectionFactory.java       # Conexões JDBC puras e rotina DDL
+        │   │   ├── UsuarioDAO.java              # CRUD relacional da hierarquia Usuario
+        │   │   ├── UnidadeSaudeDAO.java         # CRUD de Unidades Básicas de Saúde
+        │   │   ├── AgendaDiariaDAO.java         # CRUD com persistência atômica da composição
+        │   │   └── AgendamentoDAO.java          # CRUD com restrição UNIQUE e lock RN01
+        │   └── service/
+        │       ├── AgendamentoService.java      # RN01, RN02 (autoliberação), RN03 e RN04
+        │       ├── AbsenteismoService.java      # Registro de faltas e acolhimento presencial
+        │       └── RelatoriosService.java       # Indicadores e Business Intelligence
+        └── test/java/br/com/vagacerta/test/
+            └── VagaCertaTest.java               # Suíte de testes unitários em JUnit 5
 
 ---
 
