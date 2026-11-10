@@ -1,12 +1,5 @@
 # VagaCerta: Sistema de Agendamento e Combate ao Absenteísmo em Unidades Básicas de Saúde
 
-## Acesso Online à Aplicação (Ambiente em Produção / Avaliação)
-
-- **Link de Acesso Direto:** [https://ais-pre-cegxje7i4bll6p2phglu2d-39434177324.us-west2.run.app](https://ais-pre-cegxje7i4bll6p2phglu2d-39434177324.us-west2.run.app)
-- **Ambiente de Desenvolvimento (Dev):** [https://ais-dev-cegxje7i4bll6p2phglu2d-39434177324.us-west2.run.app](https://ais-dev-cegxje7i4bll6p2phglu2d-39434177324.us-west2.run.app)
-
----
-
 ## Identificação Acadêmica e Autoria
 
 - **Instituição:** Centro Universitário de Maringá (UniCesumar)
