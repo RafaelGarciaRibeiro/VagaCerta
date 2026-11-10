@@ -388,8 +388,9 @@ erDiagram
 
 ---
 
-6. Estrutura de Diretórios e Pacotes do Código-Fonte
+### 6. Estrutura de Diretórios e Pacotes do Código-Fonte
 
+```text
 /
 ├── metadata.json                                # Metadados do projeto
 ├── README.md                                    # Documentação oficial detalhada
@@ -440,7 +441,6 @@ erDiagram
         │       └── RelatoriosService.java       # Indicadores e Business Intelligence
         └── test/java/br/com/vagacerta/test/
             └── VagaCertaTest.java               # Suíte de testes unitários em JUnit 5
-
 ---
 
 ## 7. Instruções de Compilação, Testes e Execução
