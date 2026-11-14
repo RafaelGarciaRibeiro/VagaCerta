@@ -66,353 +66,182 @@ A solução adota o padrão arquitetural em camadas combinado ao modelo **MVC (M
 
   * **Polimorfismo:** Métodos abstratos da classe `Agendamento` (`janelaConfirmacaoHoras()`, `duracaoMinutos()`, `exigePreparo()`, `gerarInstrucoesAtendimento()` e `deveSerAutoliberado()`) são sobrescritos com comportamentos distintos por cada procedimento. O motor de autoliberação varre listas polimórficas de agendamentos pendentes aplicando a regra de descarte temporal sem acoplamento a estruturas condicionais extensas (`if/else` ou `switch`).
 
-## 4. Diagrama de Classes UML (Mermaid.js)
+## 4. Diagrama de Classes UML
 
-```
-classDiagram
-    direction TB
+![Diagrama de Classes UML do VagaCerta](docs/diagramas/diagrama_classes_UML.png)
 
-    class PerfilAcesso {
-        <<enumeration>>
-        PACIENTE
-        PROFISSIONAL_SAUDE
-        GESTOR_UNIDADE
-    }
+*Legenda: triângulo vazado = herança; losango preenchido = composição; losango vazado = agregação; itálico = método abstrato; `+` público, `-` privado, `#` protegido. Arquivos editáveis: [draw.io](docs/diagramas/VagaCerta_Diagrama_Classes_UML.drawio) e [código Mermaid](docs/diagramas/fonte_diagrama_classes_UML.mmd).*
 
-    class StatusHorario {
-        <<enumeration>>
-        LIVRE
-        RESERVADO
-    }
+## 5. Diagrama Entidade-Relacionamento (DER) em Modelo Físico
 
-    class StatusAgendamento {
-        <<enumeration>>
-        PENDENTE_CONFIRMACAO
-        CONFIRMADO
-        CANCELADO_USUARIO
-        AUTOLIBERADO_TIMEOUT
-        REALIZADO
-        FALTA_NAO_JUSTIFICADA
-    }
+![DER do VagaCerta](docs/diagramas/diagrama_DER.png)
 
-    class TipoAgendamento {
-        <<enumeration>>
-        CONSULTA_CLINICA
-        EXAME
-        VACINACAO
-    }
+*Legenda: PK = chave primária; FK = chave estrangeira; UK = chave única. Notação pé de galinha: `||` exatamente um, `o|` zero ou um, `o{` zero ou muitos, `|{` um ou muitos. Arquivos editáveis: [draw.io](docs/diagramas/VagaCerta_DER.drawio) e [código Mermaid](docs/diagramas/fonte_diagrama_DER.mmd).*
 
-    class Usuario {
-        <<abstract>>
-        #int id
-        #String nome
-        #String cpf
-        #String email
-        #String telefone
-        #PerfilAcesso perfil
-        +getId() int
-        +getNome() String
-        +getCpf() String
-        +getPerfil() PerfilAcesso
-    }
-
-    class Paciente {
-        -String cartaoSus
-        -int faltasSemestre
-        -boolean bloqueadoOnline
-        +podeAgendarOnline() boolean
-        +registrarFaltaNaoJustificada() void
-        +desbloquearAcolhimento(GestorUnidade gestor) void
-    }
-
-    class ProfissionalSaude {
-        -String registroConselho
-        -String especialidade
-        +gerarAgenda(LocalDate data, LocalTime inicio, LocalTime fim, TipoAgendamento tipo) AgendaDiaria
-    }
-
-    class GestorUnidade {
-        -String matricula
-        +validarAtestadoEDesbloquear(Paciente paciente) void
-    }
-
-    class UnidadeSaude {
-        -int id
-        -String nome
-        -String cnes
-        -String endereco
-        -String telefone
-    }
-
-    class AgendaDiaria {
-        -int id
-        -LocalDate data
-        -LocalTime horaInicio
-        -LocalTime horaFim
-        -List~Horario~ horarios
-        +gerarGradeDinamica(TipoAgendamento tipo) void
-        +getHorariosDisponiveis() List~Horario~
-    }
-
-    class Horario {
-        -int id
-        -LocalTime horaInicio
-        -LocalTime horaFim
-        -StatusHorario status
-        +reservar() void
-        +liberar() void
-        +isLivre() boolean
-    }
-
-    class Agendamento {
-        <<abstract>>
-        #int id
-        #LocalDateTime dataCriacao
-        #StatusAgendamento status
-        #boolean confirmado
-        +confirmarPresenca() void
-        +janelaConfirmacaoHoras()* int
-        +duracaoMinutos()* int
-        +exigePreparo()* boolean
-        +gerarInstrucoesAtendimento()* String
-        +deveSerAutoliberado(LocalDateTime agora)* boolean
-    }
-
-    class ConsultaClinica {
-        -String especialidade
-        +janelaConfirmacaoHoras() int
-        +duracaoMinutos() int
-        +exigePreparo() boolean
-        +gerarInstrucoesAtendimento() String
-        +deveSerAutoliberado(LocalDateTime agora) boolean
-    }
-
-    class Exame {
-        -String tipoExame
-        -String preparoEspecifico
-        +janelaConfirmacaoHoras() int
-        +duracaoMinutos() int
-        +exigePreparo() boolean
-        +gerarInstrucoesAtendimento() String
-        +deveSerAutoliberado(LocalDateTime agora) boolean
-    }
-
-    class Vacinacao {
-        -String imunizante
-        -int dose
-        +janelaConfirmacaoHoras() int
-        +duracaoMinutos() int
-        +exigePreparo() boolean
-        +gerarInstrucoesAtendimento() String
-        +deveSerAutoliberado(LocalDateTime agora) boolean
-    }
-
-    Usuario <|-- Paciente
-    Usuario <|-- ProfissionalSaude
-    Usuario <|-- GestorUnidade
-
-    Agendamento <|-- ConsultaClinica
-    Agendamento <|-- Exame
-    Agendamento <|-- Vacinacao
-
-    AgendaDiaria "1" *-- "1..*" Horario : composição estrita
-    UnidadeSaude "1" o-- "*" ProfissionalSaude : lotação
-    UnidadeSaude "1" o-- "*" GestorUnidade : gestão
-    ProfissionalSaude "1" -- "*" AgendaDiaria : disponibiliza
-    Paciente "1" -- "*" Agendamento : solicita
-    Agendamento "0..1" -- "1" Horario : reserva (RN01)
-
-```
-
-## 5. Diagrama Entidade-Relacionamento (DER) em Modelo Físico (Mermaid.js)
-
-```
-erDiagram
-    UNIDADE_SAUDE {
-        int id PK
-        varchar nome
-        varchar cnes UK
-        varchar endereco
-        varchar telefone
-    }
-
-    USUARIO {
-        int id PK
-        varchar nome
-        varchar cpf UK
-        varchar email
-        varchar telefone
-        varchar perfil_acesso
-    }
-
-    PACIENTE {
-        int usuario_id PK,FK
-        varchar cartao_sus UK
-        int faltas_semestre
-        boolean bloqueado_online
-    }
-
-    PROFISSIONAL_SAUDE {
-        int usuario_id PK,FK
-        int unidade_id FK
-        varchar registro_conselho UK
-        varchar especialidade
-    }
-
-    GESTOR_UNIDADE {
-        int usuario_id PK,FK
-        int unidade_id FK
-        varchar matricula UK
-    }
-
-    AGENDA_DIARIA {
-        int id PK
-        int profissional_id FK
-        int unidade_id FK
-        date data_agenda
-        time hora_inicio
-        time hora_fim
-    }
-
-    HORARIO {
-        int id PK
-        int agenda_diaria_id FK "ON DELETE CASCADE"
-        time hora_inicio
-        time hora_fim
-        varchar status
-    }
-
-    AGENDAMENTO {
-        int id PK
-        int paciente_id FK
-        int horario_id UK "FK + UNIQUE (RN01)"
-        varchar tipo_agendamento
-        varchar status
-        boolean confirmado
-        datetime data_criacao
-        varchar detalhe_procedimento
-        text instrucoes_preparo
-    }
-
-    USUARIO ||--o| PACIENTE : "herança PF (1:1)"
-    USUARIO ||--o| PROFISSIONAL_SAUDE : "herança PF (1:1)"
-    USUARIO ||--o| GESTOR_UNIDADE : "herança PF (1:1)"
-    UNIDADE_SAUDE ||--o{ PROFISSIONAL_SAUDE : "vincula"
-    UNIDADE_SAUDE ||--o{ GESTOR_UNIDADE : "vincula"
-    UNIDADE_SAUDE ||--o{ AGENDA_DIARIA : "pertence a"
-    PROFISSIONAL_SAUDE ||--o{ AGENDA_DIARIA : "atende em"
-    AGENDA_DIARIA ||--|{ HORARIO : "compõe (CASCADE)"
-    PACIENTE ||--o{ AGENDAMENTO : "agenda"
-    HORARIO ||--o| AGENDAMENTO : "exclusivo (UNIQUE RN01)"
-
-```
+> Nota: o esquema implementado em `database/01_schema.sql` tem 13 tabelas (inclui as tabelas das especializações de agendamento, `registro_falta` e `liberacao_vaga`). As diferenças em relação a este DER estão descritas em `docs/AUDITORIA_CONFORMIDADE.md`.
 
 ## 6. Estrutura de Diretórios e Pacotes do Código-Fonte
 
 ```
-/
-├── metadata.json                                # Metadados do projeto
-├── README.md                                    # Documentação oficial detalhada
-├── src/
-│   └── App.tsx                                  # Interface frontend React + TypeScript
-└── java-backend/
-    ├── pom.xml                                  # Configuração de build Maven e dependências
-    ├── schema.sql                               # Script DDL oficial para MySQL 8
-    ├── lib/                                     # Dependências JAR autocontidas (JDBC e JUnit)
-    │   ├── sqlite-jdbc-3.45.1.0.jar
-    │   ├── mysql-connector-j-8.3.0.jar
-    │   ├── junit-jupiter-api-5.10.2.jar
-    │   ├── junit-jupiter-engine-5.10.2.jar
-    │   └── junit-platform-console-standalone-1.10.2.jar
-    └── src/
-        ├── main/java/br/com/vagacerta/
-        │   ├── Main.java                        # Classe executável principal
-        │   ├── model/
-        │   │   ├── enums/
-        │   │   │   ├── PerfilAcesso.java
-        │   │   │   ├── StatusHorario.java
-        │   │   │   ├── StatusAgendamento.java
-        │   │   │   └── TipoAgendamento.java
-        │   │   ├── usuario/
-        │   │   │   ├── Usuario.java             # Classe base abstrata
-        │   │   │   ├── Paciente.java            # Herança e validação de RN03
-        │   │   │   ├── ProfissionalSaude.java   # Herança e método gerarAgenda
-        │   │   │   └── GestorUnidade.java       # Herança de controle gestor
-        │   │   ├── unidade/
-        │   │   │   └── UnidadeSaude.java
-        │   │   ├── agenda/
-        │   │   │   ├── Horario.java
-        │   │   │   └── AgendaDiaria.java        # Composição estrita e RN04
-        │   │   └── agendamento/
-        │   │       ├── Agendamento.java         # Base abstrata polimórfica
-        │   │       ├── ConsultaClinica.java     # Polimorfismo: 24h / 20 min
-        │   │       ├── Exame.java               # Polimorfismo: 48h / 30 min / preparo
-        │   │       └── Vacinacao.java           # Polimorfismo: 0h / 5 min / isenta
-        │   ├── dao/
-        │   │   ├── ConnectionFactory.java       # Conexões JDBC puras e rotina DDL
-        │   │   ├── UsuarioDAO.java              # CRUD relacional da hierarquia Usuario
-        │   │   ├── UnidadeSaudeDAO.java         # CRUD de Unidades Básicas de Saúde
-        │   │   ├── AgendaDiariaDAO.java         # CRUD com persistência atômica da composição
-        │   │   └── AgendamentoDAO.java          # CRUD com restrição UNIQUE e lock RN01
-        │   └── service/
-        │       ├── AgendamentoService.java      # RN01, RN02 (autoliberação), RN03 e RN04
-        │       ├── AbsenteismoService.java      # Registro de faltas e acolhimento presencial
-        │       └── RelatoriosService.java       # Indicadores e Business Intelligence
-        └── test/java/br/com/vagacerta/test/
-            └── VagaCertaTest.java               # Suíte de testes unitários em JUnit 5
-
+vagacerta/
+├── backend/                          # API e regras de negócio (Java 17, JDBC puro)
+│   ├── lib/                          # JARs externos autocontidos (JDBC e JUnit)
+│   │   ├── sqlite-jdbc-3.45.1.0.jar
+│   │   ├── mysql-connector-j-8.3.0.jar
+│   │   ├── junit-jupiter-api-5.10.2.jar
+│   │   ├── junit-jupiter-engine-5.10.2.jar
+│   │   ├── junit-platform-console-standalone-1.10.2.jar
+│   │   └── ... (demais dependências do JUnit e do SLF4J)
+│   └── src/
+│       ├── Main.java                 # Classe executável principal (demo, --interactive, --api, --db-check)
+│       ├── model/                    # Entidades de domínio
+│       │   ├── RegraNegocioException.java
+│       │   ├── enums/                # PerfilAcesso, StatusHorario, StatusAgendamento, TipoAgendamento
+│       │   ├── usuario/              # Usuario (abstrata), Paciente, ProfissionalSaude, GestorUnidade
+│       │   ├── unidade/              # UnidadeSaude
+│       │   ├── agenda/               # AgendaDiaria (composição e RN04), Horario, HorarioDisponivel
+│       │   ├── agendamento/          # Agendamento (abstrata), ConsultaClinica, Exame, Vacinacao,
+│       │   │                         # RegistroFalta, LiberacaoVaga
+│       │   └── relatorio/            # RelatorioBI
+│       ├── dao/                      # Acesso ao banco e queries SQL (JDBC)
+│       │   ├── BaseDAO.java, Transacao.java, SqlFunction.java, PersistenciaException.java
+│       │   ├── UsuarioDAO.java, UnidadeSaudeDAO.java, AgendaDiariaDAO.java
+│       │   ├── AgendamentoDAO.java, RegistroFaltaDAO.java, LiberacaoVagaDAO.java
+│       │   └── RelatorioDAO.java
+│       ├── service/                  # Regras de negócio e validações
+│       │   ├── UsuarioService.java        # Cadastro unificado e validações
+│       │   ├── AgendamentoService.java    # RN01, RN02 (autoliberação), RN03 e RN04
+│       │   ├── AbsenteismoService.java    # Registro de faltas e acolhimento presencial
+│       │   └── RelatoriosService.java     # Indicadores e Business Intelligence
+│       ├── api/                      # Endpoints HTTP (ApiServer) e serialização JSON (Json)
+│       ├── util/                     # ConnectionFactory, StatusConexao, SenhaUtil, Validador, Sql
+│       ├── view/                     # DemoCompleta e CliInterativa (terminal)
+│       └── test/                     # VagaCertaTest.java (suíte JUnit 5)
+├── frontend/                         # Interface web (React + TypeScript + Vite)
+│   ├── public/                       # Arquivos estáticos
+│   ├── src/
+│   │   ├── components/               # Componentes reutilizáveis (ui.tsx, Senha.tsx)
+│   │   ├── pages/                    # Telas: Paciente, Profissional e Gestor
+│   │   ├── services/                 # Requisições HTTP para o backend (api.ts)
+│   │   ├── types/                    # Interfaces TypeScript espelhando os models
+│   │   ├── App.tsx                   # Login, rotas e layout principal
+│   │   ├── main.tsx                  # Ponto de entrada da aplicação
+│   │   └── hooks.ts, format.ts, index.css
+│   ├── index.html
+│   ├── package.json, tsconfig.json, vite.config.ts
+├── database/                         # Scripts SQL versionados
+│   ├── 01_schema.sql                 # Criação de tabelas, chaves e constraints (MySQL 8)
+│   ├── 02_seed.sql                   # Inserts iniciais para popular e testar o sistema (MySQL 8)
+│   ├── 01_schema_sqlite.sql          # Mesmo modelo físico para SQLite (banco padrão)
+│   └── 02_seed_sqlite.sql            # Mesmos seeds para SQLite
+├── docs/                             # PDFs da AEP, documentação técnica, auditoria e diagramas/ (UML e DER)
+└── README.md                         # Passo a passo para subir banco, back e front
 ```
 
 ## 7. Instruções de Compilação, Testes e Execução
 
 ### Requisitos de Ambiente
 
-* **Java Development Kit (JDK)** versão **17** ou superior instalada.
+* **Java Development Kit (JDK)** versão **17** ou superior.
 
-* Ambiente de terminal (Linux/macOS Bash ou Windows CMD/PowerShell).
+* **Node.js 18** ou superior (somente para o frontend).
 
-### Compilação do Projeto
+* Terminal: Linux/macOS (Bash) ou Windows (CMD/PowerShell).
 
-Para compilar todas as classes do modelo, DAO, serviços e testes unitários em um diretório binário isolado:
+> **Windows:** em todos os comandos Java abaixo, troque `:` por `;` no classpath (`"bin;lib/*"`). Rodando a partir de `backend/`, os scripts do banco são encontrados automaticamente em `../database`.
 
-```
-cd java-backend
+### 7.1 Compilação do backend
+
+```bash
+cd backend
 mkdir -p bin
-javac -cp "lib/*" -d bin $(find src -name "*.java")
-
+javac -encoding UTF-8 -cp "lib/*" -d bin $(find src -name "*.java")
 ```
 
-### Execução da Suíte de Testes Unitários em JUnit 5
-
-A suíte `VagaCertaTest` valida em nível unitário a herança de usuários, a parametrização dinâmica de grade por procedimento (RN04), o cálculo polimórfico de janelas de descarte e autoliberação (RN02) e o bloqueio automático por reincidência de faltas com posterior desbloqueio por abono presencial (RN03):
+No Windows (CMD), liste os fontes em um arquivo e compile:
 
 ```
-cd java-backend
-java -cp "bin:lib/*" org.junit.platform.console.ConsoleLauncher --scan-class-path --class-path "bin"
-
+cd backend
+mkdir bin
+dir /s /b src\*.java > fontes.txt
+javac -encoding UTF-8 -cp "lib/*" -d bin @fontes.txt
 ```
 
-### Execução da Demonstração Completa Ponta a Ponta
+### 7.2 Banco de dados
 
-A classe `Main` realiza a execução automatizada de todo o ciclo de vida do software: inicialização das tabelas relacionais com chaves estrangeiras, cadastro de UBS e atores via herança, geração dinâmica de horários via composição (RN04), efetivação de agendamentos polimórficos com lock de horário (RN01), teste de tentativa de reserva concorrente rejeitada (RN01), simulação de decurso de prazo temporal com descarte automático de vagas não confirmadas e retorno imediato ao estado livre (RN02), bloqueio de paciente reincidente com posterior acolhimento presencial por gestor (RN03) e emissão de relatório consolidado de Business Intelligence:
+**SQLite (padrão, sem configuração):** na primeira execução é criado o arquivo local `vagacerta.db`, a partir de `database/01_schema_sqlite.sql` e `database/02_seed_sqlite.sql`.
 
-```
-cd java-backend
-java -cp "bin:lib/*" br.com.vagacerta.Main
+**MySQL 8 (opcional):** crie o banco rodando `database/01_schema.sql` e depois `database/02_seed.sql` no MySQL Workbench (ou deixe o sistema criar automaticamente na primeira execução) e informe a conexão por variáveis de ambiente:
 
-```
-
-### Execução em Modo Interativo (Terminal CLI)
-
-Para operar o sistema em modo de terminal interativo:
-
-```
-cd java-backend
-java -cp "bin:lib/*" br.com.vagacerta.Main --interactive
-
+```bash
+export VAGACERTA_JDBC_URL="jdbc:mysql://localhost:3306/vagacerta_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
+export VAGACERTA_DB_USER=root
+export VAGACERTA_DB_PASSWORD=sua_senha
 ```
 
-*(Nota: Em ambientes Windows CMD/PowerShell, substitua `:` por `;` no parâmetro `-cp`, utilizando `"bin;lib/*"`.)*
+No Windows (CMD), use `set "VAGACERTA_JDBC_URL=..."`, `set VAGACERTA_DB_USER=root` e `set VAGACERTA_DB_PASSWORD=sua_senha`.
+
+**Testar a conexão e validar as 13 tabelas:**
+
+```bash
+cd backend
+java -cp "bin:lib/*" Main --db-check
+```
+
+### 7.3 Suíte de testes unitários (JUnit 5)
+
+A suíte `VagaCertaTest` valida a herança de usuários, a grade dinâmica por procedimento (RN04), as janelas de descarte e autoliberação (RN02), a exclusividade de horário com concorrência (RN01) e o bloqueio por reincidência de faltas (RN03):
+
+```bash
+cd backend
+java -cp "bin:lib/*" org.junit.platform.console.ConsoleLauncher execute --scan-class-path --class-path bin
+```
+
+### 7.4 Demonstração completa ponta a ponta
+
+A classe `Main` executa o ciclo de vida completo: criação das tabelas, cadastro de UBS e atores, geração da grade (RN04), agendamentos polimórficos (RN01), tentativa concorrente rejeitada, autoliberação por prazo vencido (RN02), bloqueio e acolhimento presencial (RN03) e relatório de Business Intelligence:
+
+```bash
+cd backend
+java -cp "bin:lib/*" Main
+```
+
+### 7.5 Modo interativo (terminal CLI)
+
+```bash
+cd backend
+java -cp "bin:lib/*" Main --interactive
+```
+
+### 7.6 API HTTP + Frontend
+
+**Terminal 1: subir a API (porta 8080):**
+
+```bash
+cd backend
+java -cp "bin:lib/*" Main --api 8080
+```
+
+**Terminal 2: subir o frontend em modo de desenvolvimento** (http://localhost:3000):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Alternativa em um único servidor: execute `npm run build` dentro de `frontend/` e abra http://localhost:8080, pois a API serve a pasta `frontend/dist`.
+
+**Contas de demonstração** (senha `senha123`):
+
+| Perfil | E-mail |
+| :--- | :--- |
+| Paciente | `lucas.pereira@email.com` |
+| Paciente bloqueado (RN03) | `roberto.alves@email.com` |
+| Profissional de Saúde | `carlos.menezes@saude.maringa.gov.br` |
+| Gestor da Unidade | `mariana.costa@saude.maringa.gov.br` |
+
+O "relógio de demonstração" do cabeçalho envia o cabeçalho `X-Agora` para simular o passar do tempo e testar as regras RN02 e RN03 sem esperar horas reais.
 
 ## 8. Considerações Finais de Conformidade
 

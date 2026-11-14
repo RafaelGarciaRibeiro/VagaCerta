@@ -1,0 +1,78 @@
+erDiagram
+    UNIDADE_SAUDE {
+        int id PK
+        varchar nome
+        varchar cnes UK
+        varchar endereco
+        varchar telefone
+    }
+
+    USUARIO {
+        int id PK
+        varchar nome
+        varchar cpf UK
+        varchar email
+        varchar telefone
+        varchar perfil_acesso
+    }
+
+    PACIENTE {
+        int usuario_id PK,FK
+        varchar cartao_sus UK
+        int faltas_semestre
+        boolean bloqueado_online
+    }
+
+    PROFISSIONAL_SAUDE {
+        int usuario_id PK,FK
+        int unidade_id FK
+        varchar registro_conselho UK
+        varchar especialidade
+    }
+
+    GESTOR_UNIDADE {
+        int usuario_id PK,FK
+        int unidade_id FK
+        varchar matricula UK
+    }
+
+    AGENDA_DIARIA {
+        int id PK
+        int profissional_id FK
+        int unidade_id FK
+        date data_agenda
+        time hora_inicio
+        time hora_fim
+    }
+
+    HORARIO {
+        int id PK
+        int agenda_diaria_id FK "ON DELETE CASCADE"
+        time hora_inicio
+        time hora_fim
+        varchar status
+    }
+
+    AGENDAMENTO {
+        int id PK
+        int paciente_id FK
+        int horario_id UK "FK + UNIQUE (RN01)"
+        varchar tipo_agendamento
+        varchar status
+        boolean confirmado
+        datetime data_criacao
+        varchar detalhe_procedimento
+        text instrucoes_preparo
+    }
+
+    USUARIO ||--o| PACIENTE : "herança PF (1:1)"
+    USUARIO ||--o| PROFISSIONAL_SAUDE : "herança PF (1:1)"
+    USUARIO ||--o| GESTOR_UNIDADE : "herança PF (1:1)"
+    UNIDADE_SAUDE ||--o{ PROFISSIONAL_SAUDE : "vincula"
+    UNIDADE_SAUDE ||--o{ GESTOR_UNIDADE : "vincula"
+    UNIDADE_SAUDE ||--o{ AGENDA_DIARIA : "pertence a"
+    PROFISSIONAL_SAUDE ||--o{ AGENDA_DIARIA : "atende em"
+    AGENDA_DIARIA ||--|{ HORARIO : "compõe (CASCADE)"
+    PACIENTE ||--o{ AGENDAMENTO : "agenda"
+    HORARIO ||--o| AGENDAMENTO : "exclusivo (UNIQUE RN01)"
+

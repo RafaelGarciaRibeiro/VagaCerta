@@ -1,0 +1,153 @@
+classDiagram
+    direction TB
+
+    class PerfilAcesso {
+        <<enumeration>>
+        PACIENTE
+        PROFISSIONAL_SAUDE
+        GESTOR_UNIDADE
+    }
+
+    class StatusHorario {
+        <<enumeration>>
+        LIVRE
+        RESERVADO
+    }
+
+    class StatusAgendamento {
+        <<enumeration>>
+        PENDENTE_CONFIRMACAO
+        CONFIRMADO
+        CANCELADO_USUARIO
+        AUTOLIBERADO_TIMEOUT
+        REALIZADO
+        FALTA_NAO_JUSTIFICADA
+    }
+
+    class TipoAgendamento {
+        <<enumeration>>
+        CONSULTA_CLINICA
+        EXAME
+        VACINACAO
+    }
+
+    class Usuario {
+        <<abstract>>
+        #int id
+        #String nome
+        #String cpf
+        #String email
+        #String telefone
+        #PerfilAcesso perfil
+        +getId() int
+        +getNome() String
+        +getCpf() String
+        +getPerfil() PerfilAcesso
+    }
+
+    class Paciente {
+        -String cartaoSus
+        -int faltasSemestre
+        -boolean bloqueadoOnline
+        +podeAgendarOnline() boolean
+        +registrarFaltaNaoJustificada() void
+        +desbloquearAcolhimento(GestorUnidade gestor) void
+    }
+
+    class ProfissionalSaude {
+        -String registroConselho
+        -String especialidade
+        +gerarAgenda(LocalDate data, LocalTime inicio, LocalTime fim, TipoAgendamento tipo) AgendaDiaria
+    }
+
+    class GestorUnidade {
+        -String matricula
+        +validarAtestadoEDesbloquear(Paciente paciente) void
+    }
+
+    class UnidadeSaude {
+        -int id
+        -String nome
+        -String cnes
+        -String endereco
+        -String telefone
+    }
+
+    class AgendaDiaria {
+        -int id
+        -LocalDate data
+        -LocalTime horaInicio
+        -LocalTime horaFim
+        -List~Horario~ horarios
+        +gerarGradeDinamica(TipoAgendamento tipo) void
+        +getHorariosDisponiveis() List~Horario~
+    }
+
+    class Horario {
+        -int id
+        -LocalTime horaInicio
+        -LocalTime horaFim
+        -StatusHorario status
+        +reservar() void
+        +liberar() void
+        +isLivre() boolean
+    }
+
+    class Agendamento {
+        <<abstract>>
+        #int id
+        #LocalDateTime dataCriacao
+        #StatusAgendamento status
+        #boolean confirmado
+        +confirmarPresenca() void
+        +janelaConfirmacaoHoras()* int
+        +duracaoMinutos()* int
+        +exigePreparo()* boolean
+        +gerarInstrucoesAtendimento()* String
+        +deveSerAutoliberado(LocalDateTime agora)* boolean
+    }
+
+    class ConsultaClinica {
+        -String especialidade
+        +janelaConfirmacaoHoras() int
+        +duracaoMinutos() int
+        +exigePreparo() boolean
+        +gerarInstrucoesAtendimento() String
+        +deveSerAutoliberado(LocalDateTime agora) boolean
+    }
+
+    class Exame {
+        -String tipoExame
+        -String preparoEspecifico
+        +janelaConfirmacaoHoras() int
+        +duracaoMinutos() int
+        +exigePreparo() boolean
+        +gerarInstrucoesAtendimento() String
+        +deveSerAutoliberado(LocalDateTime agora) boolean
+    }
+
+    class Vacinacao {
+        -String imunizante
+        -int dose
+        +janelaConfirmacaoHoras() int
+        +duracaoMinutos() int
+        +exigePreparo() boolean
+        +gerarInstrucoesAtendimento() String
+        +deveSerAutoliberado(LocalDateTime agora) boolean
+    }
+
+    Usuario <|-- Paciente
+    Usuario <|-- ProfissionalSaude
+    Usuario <|-- GestorUnidade
+
+    Agendamento <|-- ConsultaClinica
+    Agendamento <|-- Exame
+    Agendamento <|-- Vacinacao
+
+    AgendaDiaria "1" *-- "1..*" Horario : composição estrita
+    UnidadeSaude "1" o-- "*" ProfissionalSaude : lotação
+    UnidadeSaude "1" o-- "*" GestorUnidade : gestão
+    ProfissionalSaude "1" -- "*" AgendaDiaria : disponibiliza
+    Paciente "1" -- "*" Agendamento : solicita
+    Agendamento "0..1" -- "1" Horario : reserva (RN01)
+
